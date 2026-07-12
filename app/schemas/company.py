@@ -1,23 +1,25 @@
 from pydantic import BaseModel
 
 
-class CompanyCreate(BaseModel):
+class CompanyBase(BaseModel):
     symbol: str
     name: str
-    sector: str | None = None
-    industry: str | None = None
-    isin: str | None = None
-    description: str | None = None
+    sector: str
+    industry: str
+    isin: str
+    description: str
 
 
-class CompanyResponse(BaseModel):
+class CompanyCreate(CompanyBase):
+    pass
+
+
+class CompanyUpdate(CompanyBase):
+    pass
+
+
+class CompanyResponse(CompanyBase):
     id: int
-    symbol: str
-    name: str
-    sector: str | None = None
-    industry: str | None = None
-    isin: str | None = None
-    description: str | None = None
 
     class Config:
         from_attributes = True
