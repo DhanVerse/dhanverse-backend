@@ -8,6 +8,7 @@ from app.db.database import Base, engine
 # Import models
 from app.models.user import User
 from app.models.company import Company
+from app.models.stock import Stock
 
 # Import routers
 from app.api.v1.health.router import router as health_router

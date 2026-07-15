@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
 
 from app.db.database import Base
 
@@ -8,14 +9,42 @@ class Company(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    symbol = Column(String(20), unique=True, nullable=False)
+    symbol = Column(
+        String,
+        unique=True,
+        nullable=False,
+        index=True,
+    )
 
-    name = Column(String(255), nullable=False)
+    name = Column(
+        String,
+        nullable=False,
+    )
 
-    sector = Column(String(100), nullable=True)
+    sector = Column(
+        String,
+        nullable=False,
+    )
 
-    industry = Column(String(100), nullable=True)
+    industry = Column(
+        String,
+        nullable=False,
+    )
 
-    isin = Column(String(20), unique=True, nullable=True)
+    isin = Column(
+        String,
+        unique=True,
+        nullable=False,
+    )
 
-    description = Column(Text, nullable=True)
+    description = Column(
+        String,
+        nullable=False,
+    )
+
+    # One-to-One Relationship with Stock
+    stock = relationship(
+        "Stock",
+        back_populates="company",
+        uselist=False,
+    )

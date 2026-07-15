@@ -2,12 +2,69 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.models.company import Company
+from app.repositories.base import BaseRepository
 
 
-class CompanyRepository:
+class CompanyRepository(BaseRepository[Company]):
 
-    def get_all(self, db: Session):
-        return db.query(Company).all()
+    def __init__(self):
+        super().__init__(Company)
+
+    # -----------------------------
+    # Company-specific methods
+    # -----------------------------
+
+    def get_by_symbol(
+        self,
+        db: Session,
+        symbol: str,
+    ):
+        return (
+            db.query(Company)
+            .filter(Company.symbol == symbol)
+            .first()
+        )
+
+    def get_by_isin(
+        self,
+        db: Session,
+        isin: str,
+    ):
+        return (
+            db.query(Company)
+            .filter(Company.isin == isin)
+            .first()
+        )
+
+    def symbol_exists_for_other(
+        self,
+        db: Session,
+        company_id: int,
+        symbol: str,
+    ):
+        return (
+            db.query(Company)
+            .filter(
+                Company.symbol == symbol,
+                Company.id != company_id,
+            )
+            .first()
+        )
+
+    def isin_exists_for_other(
+        self,
+        db: Session,
+        company_id: int,
+        isin: str,
+    ):
+        return (
+            db.query(Company)
+            .filter(
+                Company.isin == isin,
+                Company.id != company_id,
+            )
+            .first()
+        )
 
     def search(
         self,
@@ -18,48 +75,11 @@ class CompanyRepository:
             db.query(Company)
             .filter(
                 or_(
+                    Company.symbol.ilike(f"%{keyword}%"),
                     Company.name.ilike(f"%{keyword}%"),
-                    Company.symbol.ilike(f"%{keyword}%")
+                    Company.sector.ilike(f"%{keyword}%"),
+                    Company.industry.ilike(f"%{keyword}%"),
                 )
             )
             .all()
         )
-
-    def get_by_id(self, db: Session, company_id: int):
-        return (
-            db.query(Company)
-            .filter(Company.id == company_id)
-            .first()
-        )
-
-    def create(
-        self,
-        db: Session,
-        company: Company,
-    ):
-        db.add(company)
-        db.commit()
-        db.refresh(company)
-        return company
-
-    def update(
-        self,
-        db: Session,
-        company: Company,
-        data: dict,
-    ):
-        for key, value in data.items():
-            setattr(company, key, value)
-
-        db.commit()
-        db.refresh(company)
-
-        return company
-
-    def delete(
-        self,
-        db: Session,
-        company: Company,
-    ):
-        db.delete(company)
-        db.commit()
