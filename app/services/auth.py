@@ -1,8 +1,12 @@
 from sqlalchemy.orm import Session
 
+from app.core.exceptions import (
+    BusinessValidationError,
+    DuplicateResourceError,
+)
+from app.core.security import hash_password, verify_password
 from app.repositories.user import UserRepository
 from app.schemas.auth import UserRegister
-from app.core.security import hash_password, verify_password
 
 
 class AuthService:
@@ -21,7 +25,9 @@ class AuthService:
         )
 
         if existing_user:
-            raise ValueError("Email already registered")
+            raise DuplicateResourceError(
+                "Email already registered"
+            )
 
         hashed_password = hash_password(user.password)
 
@@ -44,12 +50,16 @@ class AuthService:
         )
 
         if not user:
-            raise ValueError("Invalid email or password")
+            raise BusinessValidationError(
+                "Invalid email or password"
+            )
 
         if not verify_password(
             password,
             user.hashed_password
         ):
-            raise ValueError("Invalid email or password")
+            raise BusinessValidationError(
+                "Invalid email or password"
+            )
 
         return user

@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from app.core.handlers import register_exception_handlers
 from app.core.logger import logger
 from app.core.settings import settings
 
@@ -23,6 +24,9 @@ app = FastAPI(
     version=settings.APP_VERSION,
 )
 
+# Register Global Exception Handlers
+register_exception_handlers(app)
+
 # ==========================================================
 # NOTE:
 # Database schema is now managed by Alembic.
@@ -38,6 +42,7 @@ app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(company_router)
 app.include_router(stock_router)
+
 
 @app.get("/")
 def root():

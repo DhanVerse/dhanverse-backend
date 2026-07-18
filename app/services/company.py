@@ -1,6 +1,9 @@
-from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
+from app.core.exceptions import (
+    DuplicateResourceError,
+    ResourceNotFoundError,
+)
 from app.models.company import Company
 from app.repositories.company import CompanyRepository
 from app.schemas.company import CompanyCreate, CompanyUpdate
@@ -48,9 +51,8 @@ class CompanyService:
         )
 
         if not company:
-            raise HTTPException(
-                status_code=404,
-                detail="Company not found",
+            raise ResourceNotFoundError(
+                "Company not found"
             )
 
         return company
@@ -68,18 +70,16 @@ class CompanyService:
             db,
             company.symbol,
         ):
-            raise HTTPException(
-                status_code=400,
-                detail="Company symbol already exists",
+            raise DuplicateResourceError(
+                "Company symbol already exists"
             )
 
         if self.repo.get_by_isin(
             db,
             company.isin,
         ):
-            raise HTTPException(
-                status_code=400,
-                detail="Company ISIN already exists",
+            raise DuplicateResourceError(
+                "Company ISIN already exists"
             )
 
         db_company = Company(
@@ -112,9 +112,8 @@ class CompanyService:
         )
 
         if not db_company:
-            raise HTTPException(
-                status_code=404,
-                detail="Company not found",
+            raise ResourceNotFoundError(
+                "Company not found"
             )
 
         if self.repo.symbol_exists_for_other(
@@ -122,9 +121,8 @@ class CompanyService:
             company_id=company_id,
             symbol=company.symbol,
         ):
-            raise HTTPException(
-                status_code=400,
-                detail="Company symbol already exists",
+            raise DuplicateResourceError(
+                "Company symbol already exists"
             )
 
         if self.repo.isin_exists_for_other(
@@ -132,9 +130,8 @@ class CompanyService:
             company_id=company_id,
             isin=company.isin,
         ):
-            raise HTTPException(
-                status_code=400,
-                detail="Company ISIN already exists",
+            raise DuplicateResourceError(
+                "Company ISIN already exists"
             )
 
         return self.repo.update(
@@ -158,9 +155,8 @@ class CompanyService:
         )
 
         if not db_company:
-            raise HTTPException(
-                status_code=404,
-                detail="Company not found",
+            raise ResourceNotFoundError(
+                "Company not found"
             )
 
         self.repo.delete(
