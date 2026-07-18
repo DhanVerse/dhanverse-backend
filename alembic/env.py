@@ -12,6 +12,7 @@ from app.core.settings import settings
 from app.models.user import User
 from app.models.company import Company
 from app.models.stock import Stock
+from app.models.portfolio import Portfolio
 
 config = context.config
 

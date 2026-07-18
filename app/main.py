@@ -11,12 +11,14 @@ from app.db.database import Base, engine
 from app.models.user import User
 from app.models.company import Company
 from app.models.stock import Stock
+from app.models.portfolio import Portfolio
 
 # Import routers
 from app.api.v1.health.router import router as health_router
 from app.api.v1.auth.router import router as auth_router
 from app.api.v1.companies.router import router as company_router
 from app.api.v1.stocks import router as stock_router
+from app.api.v1.portfolios.router import router as portfolio_router
 
 
 app = FastAPI(
@@ -42,6 +44,7 @@ app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(company_router)
 app.include_router(stock_router)
+app.include_router(portfolio_router)
 
 
 @app.get("/")

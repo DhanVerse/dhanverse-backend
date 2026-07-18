@@ -2,10 +2,11 @@ from datetime import datetime, timedelta, timezone
 
 from jose import JWTError, jwt
 
+from app.core.exceptions import BusinessValidationError
 from app.core.settings import settings
 
 
-def create_access_token(data: dict):
+def create_access_token(data: dict) -> str:
     to_encode = data.copy()
 
     expire = datetime.now(timezone.utc) + timedelta(
@@ -23,7 +24,7 @@ def create_access_token(data: dict):
     return encoded_jwt
 
 
-def verify_access_token(token: str):
+def verify_access_token(token: str) -> dict:
     try:
         payload = jwt.decode(
             token,
@@ -34,4 +35,6 @@ def verify_access_token(token: str):
         return payload
 
     except JWTError:
-        raise
+        raise BusinessValidationError(
+            "Invalid or expired access token"
+        )

@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar, Type
+from typing import Generic, Type, TypeVar
 
 from sqlalchemy import asc, desc, or_
 from sqlalchemy.orm import Session
@@ -25,6 +25,13 @@ class BaseRepository(Generic[ModelType]):
         order: str = "asc",
     ):
 
+        # -----------------------------
+        # Pagination Validation
+        # -----------------------------
+
+        page = max(page, 1)
+        size = max(min(size, 100), 1)
+
         query = db.query(self.model)
 
         # -----------------------------
@@ -38,8 +45,13 @@ class BaseRepository(Generic[ModelType]):
             for column in self.model.__table__.columns:
 
                 try:
-                    if hasattr(column.type, "length") or str(column.type).startswith("VARCHAR"):
-                        filters.append(column.ilike(f"%{search}%"))
+                    if (
+                        hasattr(column.type, "length")
+                        or str(column.type).startswith("VARCHAR")
+                    ):
+                        filters.append(
+                            column.ilike(f"%{search}%")
+                        )
                 except Exception:
                     pass
 
@@ -63,7 +75,11 @@ class BaseRepository(Generic[ModelType]):
         # Pagination
         # -----------------------------
 
-        return query.offset((page - 1) * size).limit(size).all()
+        return (
+            query.offset((page - 1) * size)
+            .limit(size)
+            .all()
+        )
 
     # ----------------------------------------------------
     # GET BY ID
@@ -89,10 +105,15 @@ class BaseRepository(Generic[ModelType]):
         db: Session,
         entity,
     ):
-        db.add(entity)
-        db.commit()
-        db.refresh(entity)
-        return entity
+        try:
+            db.add(entity)
+            db.commit()
+            db.refresh(entity)
+            return entity
+
+        except Exception:
+            db.rollback()
+            raise
 
     # ----------------------------------------------------
     # UPDATE
@@ -104,13 +125,18 @@ class BaseRepository(Generic[ModelType]):
         entity,
         data: dict,
     ):
-        for key, value in data.items():
-            setattr(entity, key, value)
+        try:
+            for key, value in data.items():
+                setattr(entity, key, value)
 
-        db.commit()
-        db.refresh(entity)
+            db.commit()
+            db.refresh(entity)
 
-        return entity
+            return entity
+
+        except Exception:
+            db.rollback()
+            raise
 
     # ----------------------------------------------------
     # DELETE
@@ -121,5 +147,11 @@ class BaseRepository(Generic[ModelType]):
         db: Session,
         entity,
     ):
-        db.delete(entity)
-        db.commit()
+        try:
+            db.delete(entity)
+            db.commit()
+            return True
+
+        except Exception:
+            db.rollback()
+            raise

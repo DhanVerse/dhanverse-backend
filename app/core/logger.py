@@ -1,8 +1,10 @@
 import logging
 
+from app.core.settings import settings
+
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+    level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO),
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
 )
 
 logger = logging.getLogger("DhanVerse")
